@@ -5,6 +5,11 @@ cp $PROJECT_ROOT/testdata/scripts/manifests/missing-binary.yaml .toolbox/tasks/m
 ! exec $TOOLBOX_BIN run missing-bin
 stdout 'Status: failed'
 stderr 'command "toolbox-definitely-missing" not found in PATH'
+! exec $TOOLBOX_BIN run missing-bin --json
+stdout '"exit_code": 127'
+stdout '"stderr": "command '
+stdout 'toolbox-definitely-missing'
+stdout 'not found in PATH"'
 
 rm .toolbox/tasks/missing.yaml
 cp $PROJECT_ROOT/testdata/scripts/manifests/timeout.yaml .toolbox/tasks/timeout.yaml

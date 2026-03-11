@@ -28,6 +28,7 @@ toolbox run hello
 toolbox run show-file --input ./data/input.txt
 toolbox run show-json --input ./payload.json --json
 toolbox run hello --dry-run
+toolbox run hello --dry-run --dry-run-full-env
 ```
 
 ### Validate environment
@@ -85,4 +86,5 @@ Use dry-run to inspect the resolved command before execution:
 toolbox run <task> --dry-run
 ```
 
+By default, dry-run only shows task-level environment overrides. Use `--dry-run-full-env` to include inherited process environment values.
 Sensitive env variables are redacted based on configured redaction keys.

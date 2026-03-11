@@ -6,6 +6,9 @@
 - Commands implemented: `list`, `run`, `doctor`, `config show`, `version`.
 - Config precedence and manifest loading are working with duplicate-name hard errors.
 - Runner enforces timeouts, validates dependencies, applies variable templates, supports dry-run, and emits normalized envelopes.
+- Preflight failures now include the reason in envelope `stderr` for JSON consumers.
+- Dry-run defaults to task-level env delta; `--dry-run-full-env` opt-in includes inherited env.
+- Relative task command paths resolve from the task's effective cwd.
 - CI (`.github/workflows/ci.yml`) and release config (`.goreleaser.yml`) are present.
 
 ## Priority areas for next iterations

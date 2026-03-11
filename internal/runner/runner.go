@@ -38,6 +38,7 @@ type ExecuteOptions struct {
 	InputFile       string
 	TimeoutOverride time.Duration
 	DryRun          bool
+	DryRunFullEnv   bool
 	CWD             string
 }
 
@@ -90,17 +91,17 @@ func (r *Runner) Execute(ctx context.Context, opts ExecuteOptions) (ExecuteResul
 
 	vars, err := r.templateVars(task, opts.InputFile)
 	if err != nil {
-		return ExecuteResult{Envelope: baseEnvelope}, &ExecError{ExitCode: 1, Message: err.Error()}
+		return preflightFailure(baseEnvelope, 1, err.Error()), &ExecError{ExitCode: 1, Message: err.Error()}
 	}
 
 	resolvedArgs, err := ResolveSlice(task.Args, vars)
 	if err != nil {
-		return ExecuteResult{Envelope: baseEnvelope}, &ExecError{ExitCode: 1, Message: err.Error()}
+		return preflightFailure(baseEnvelope, 1, err.Error()), &ExecError{ExitCode: 1, Message: err.Error()}
 	}
 
 	resolvedEnv, err := resolveEnvTemplates(task.Env, vars)
 	if err != nil {
-		return ExecuteResult{Envelope: baseEnvelope}, &ExecError{ExitCode: 1, Message: err.Error()}
+		return preflightFailure(baseEnvelope, 1, err.Error()), &ExecError{ExitCode: 1, Message: err.Error()}
 	}
 
 	resolvedCWD := opts.CWD
@@ -113,40 +114,35 @@ func (r *Runner) Execute(ctx context.Context, opts ExecuteOptions) (ExecuteResul
 	if resolvedCWD == "" {
 		resolvedCWD, err = os.Getwd()
 		if err != nil {
-			return ExecuteResult{Envelope: baseEnvelope}, &ExecError{ExitCode: 1, Message: fmt.Sprintf("resolve cwd: %v", err)}
+			message := fmt.Sprintf("resolve cwd: %v", err)
+			return preflightFailure(baseEnvelope, 1, message), &ExecError{ExitCode: 1, Message: message}
 		}
 	}
 
-	commandPath, err := exec.LookPath(task.Command)
+	commandPath, err := resolveCommandPath(task.Command, resolvedCWD)
 	if err != nil {
-		message := fmt.Sprintf("command %q not found in PATH", task.Command)
-		return ExecuteResult{
-			Envelope: contract.RunEnvelope{
-				Task:      baseEnvelope.Task,
-				OK:        false,
-				ExitCode:  exitCodeCommandNotFound,
-				Artifacts: []string{},
-				StartedAt: baseEnvelope.StartedAt,
-			},
-		}, &ExecError{ExitCode: exitCodeCommandNotFound, Message: message}
+		return preflightFailure(baseEnvelope, exitCodeCommandNotFound, err.Error()), &ExecError{ExitCode: exitCodeCommandNotFound, Message: err.Error()}
 	}
 	if err := validatePathPolicy(commandPath, r.cfg.Execution.AllowPaths, r.cfg.Execution.DenyPaths); err != nil {
-		return ExecuteResult{Envelope: baseEnvelope}, &ExecError{ExitCode: 1, Message: err.Error()}
+		return preflightFailure(baseEnvelope, 1, err.Error()), &ExecError{ExitCode: 1, Message: err.Error()}
 	}
 
 	if err := validateDependencies(task.Requires); err != nil {
-		baseEnvelope.ExitCode = exitCodeCommandNotFound
-		return ExecuteResult{Envelope: baseEnvelope}, &ExecError{ExitCode: exitCodeCommandNotFound, Message: err.Error()}
+		return preflightFailure(baseEnvelope, exitCodeCommandNotFound, err.Error()), &ExecError{ExitCode: exitCodeCommandNotFound, Message: err.Error()}
 	}
 
 	if opts.DryRun {
+		dryRunEnv := resolvedEnv
+		if opts.DryRunFullEnv {
+			dryRunEnv = mergeEnv(r.env, resolvedEnv)
+		}
 		dryRun := contract.DryRunEnvelope{
 			Task:    task.Name,
 			Command: commandPath,
 			Args:    resolvedArgs,
 			Cwd:     resolvedCWD,
 			Timeout: timeout.String(),
-			Env:     redactEnv(mergeEnv(r.env, resolvedEnv), r.cfg.Execution.RedactKeys),
+			Env:     redactEnv(dryRunEnv, r.cfg.Execution.RedactKeys),
 		}
 		return ExecuteResult{DryRun: &dryRun}, nil
 	}
@@ -201,7 +197,41 @@ func (r *Runner) Execute(ctx context.Context, opts ExecuteOptions) (ExecuteResul
 	}
 	envelope.OK = false
 	envelope.ExitCode = exitCode
+	if strings.TrimSpace(envelope.Stderr) == "" {
+		envelope.Stderr = message
+	}
 	return ExecuteResult{Envelope: envelope}, &ExecError{ExitCode: exitCode, Message: message}
+}
+
+func resolveCommandPath(command, resolvedCWD string) (string, error) {
+	trimmed := strings.TrimSpace(command)
+	if trimmed == "" {
+		return "", errors.New("task command is required")
+	}
+
+	candidate := trimmed
+	if isPathLikeCommand(trimmed) && !filepath.IsAbs(trimmed) {
+		candidate = filepath.Join(resolvedCWD, trimmed)
+	}
+
+	path, err := exec.LookPath(candidate)
+	if err != nil {
+		if isPathLikeCommand(trimmed) {
+			return "", fmt.Errorf("command path %q not found or not executable", candidate)
+		}
+		return "", fmt.Errorf("command %q not found in PATH", trimmed)
+	}
+	return path, nil
+}
+
+func isPathLikeCommand(command string) bool {
+	return strings.Contains(command, "/") || strings.Contains(command, "\\")
+}
+
+func preflightFailure(base contract.RunEnvelope, exitCode int, message string) ExecuteResult {
+	base.ExitCode = exitCode
+	base.Stderr = message
+	return ExecuteResult{Envelope: base}
 }
 
 func (r *Runner) templateVars(task manifest.Task, inputPath string) (map[string]string, error) {

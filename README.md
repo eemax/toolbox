@@ -81,6 +81,7 @@ YAML
 
 - `toolbox list`
 - `toolbox run <task> [--input <file>] [--dry-run] [--timeout <duration>]`
+- `toolbox run <task> [--input <file>] [--dry-run] [--dry-run-full-env] [--timeout <duration>]`
 - `toolbox doctor`
 - `toolbox config show`
 - `toolbox version`
@@ -91,6 +92,9 @@ YAML
 - `--verbose`: emit execution trace events
 - `--log-level <level>`: override resolved log level
 - `--json`: output machine-readable JSON
+
+`--dry-run` shows resolved command metadata and only task-level environment overrides by default (redacted).  
+Use `--dry-run-full-env` to include inherited environment variables (also redacted).
 
 ## Development
 

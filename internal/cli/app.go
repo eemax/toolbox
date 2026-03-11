@@ -39,6 +39,7 @@ type App struct {
 	stdout  io.Writer
 	stderr  io.Writer
 	env     map[string]string
+	logger  *slog.Logger
 }
 
 // New creates a CLI app instance.
@@ -52,7 +53,9 @@ func New(version string, stdout, stderr io.Writer, env map[string]string) *App {
 	if env == nil {
 		env = envToMap(os.Environ())
 	}
-	return &App{version: version, stdout: stdout, stderr: stderr, env: env}
+	app := &App{version: version, stdout: stdout, stderr: stderr, env: env}
+	app.configureLogger("info")
+	return app
 }
 
 // Execute runs the CLI and returns the process exit code.
@@ -80,9 +83,10 @@ type globalFlags struct {
 }
 
 type runFlags struct {
-	InputFile string
-	DryRun    bool
-	Timeout   string
+	InputFile     string
+	DryRun        bool
+	DryRunFullEnv bool
+	Timeout       string
 }
 
 func (a *App) rootCommand() *cobra.Command {
@@ -197,6 +201,7 @@ func (a *App) newRunCommand(global *globalFlags) *cobra.Command {
 				InputFile:       runOpts.InputFile,
 				TimeoutOverride: timeout,
 				DryRun:          runOpts.DryRun,
+				DryRunFullEnv:   runOpts.DryRunFullEnv,
 				CWD:             cwd,
 			})
 
@@ -246,6 +251,7 @@ func (a *App) newRunCommand(global *globalFlags) *cobra.Command {
 	}
 	cmd.Flags().StringVar(&runOpts.InputFile, "input", "", "Input file path")
 	cmd.Flags().BoolVar(&runOpts.DryRun, "dry-run", false, "Print resolved execution plan without running")
+	cmd.Flags().BoolVar(&runOpts.DryRunFullEnv, "dry-run-full-env", false, "Include inherited environment in dry-run output (redacted)")
 	cmd.Flags().StringVar(&runOpts.Timeout, "timeout", "", "Override timeout for this run (e.g. 30s)")
 	return cmd
 }
@@ -294,8 +300,7 @@ func (a *App) newConfigCommand(global *globalFlags) *cobra.Command {
 				}
 				return output.JSON(a.stdout, payload)
 			}
-			output.ConfigHuman(a.stdout, loaded)
-			return nil
+			return output.ConfigHuman(a.stdout, loaded)
 		},
 	})
 	return configCmd
@@ -313,6 +318,15 @@ func (a *App) newVersionCommand() *cobra.Command {
 
 func (a *App) loadConfigAndCatalog(ctx context.Context, cmd *cobra.Command, global *globalFlags) (config.LoadedConfig, manifest.Catalog, error) {
 	_ = ctx
+	levelForResolution := global.LogLevel
+	if strings.TrimSpace(levelForResolution) == "" {
+		levelForResolution = "info"
+	}
+	if global.Verbose {
+		levelForResolution = "debug"
+	}
+	a.configureLogger(levelForResolution)
+
 	cwd, err := os.Getwd()
 	if err != nil {
 		return config.LoadedConfig{}, manifest.Catalog{}, &ExitError{Code: 1, Message: fmt.Sprintf("resolve cwd: %v", err)}
@@ -337,6 +351,14 @@ func (a *App) loadConfigAndCatalog(ctx context.Context, cmd *cobra.Command, glob
 	if err != nil {
 		return config.LoadedConfig{}, manifest.Catalog{}, &ExitError{Code: 1, Message: err.Error()}
 	}
+	level := loaded.Config.LogLevel
+	if cmd.Root().PersistentFlags().Changed("log-level") {
+		level = global.LogLevel
+	}
+	if global.Verbose {
+		level = "debug"
+	}
+	a.configureLogger(level)
 
 	catalog := manifest.Load(manifest.LoadOptions{
 		ProjectDir: config.ProjectTaskDir(cwd),
@@ -356,8 +378,25 @@ func (a *App) trace(event string, kv ...string) {
 	for i := 0; i < len(kv); i += 2 {
 		attrs = append(attrs, kv[i], kv[i+1])
 	}
-	logger := slog.New(slog.NewTextHandler(a.stderr, &slog.HandlerOptions{Level: slog.LevelDebug}))
-	logger.Debug(event, attrs...)
+	a.logger.Debug(event, attrs...)
+}
+
+func (a *App) configureLogger(level string) {
+	resolvedLevel := parseLogLevel(level)
+	a.logger = slog.New(slog.NewTextHandler(a.stderr, &slog.HandlerOptions{Level: resolvedLevel}))
+}
+
+func parseLogLevel(level string) slog.Level {
+	switch strings.ToLower(strings.TrimSpace(level)) {
+	case "debug":
+		return slog.LevelDebug
+	case "warn", "warning":
+		return slog.LevelWarn
+	case "error":
+		return slog.LevelError
+	default:
+		return slog.LevelInfo
+	}
 }
 
 func sortedTasks(tasks map[string]manifest.Task) []manifest.Task {

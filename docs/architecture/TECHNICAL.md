@@ -42,6 +42,8 @@ flowchart LR
 - `stdout`, `stderr`, `artifacts`, `started_at`
 - `stdout_truncated`, `stderr_truncated`, `stdout_bytes`, `stderr_bytes`
 
+Pre-execution failures (missing command, template errors, policy failures) are surfaced in envelope `stderr` so machine consumers can read failure reasons directly from JSON output.
+
 Dry-run outputs a separate envelope with resolved command/args/cwd/timeout/env (redacted).
 
 ## Dependencies and rationale
@@ -57,3 +59,4 @@ Dry-run outputs a separate envelope with resolved command/args/cwd/timeout/env (
 - Internal packages isolate concerns, keeping future features (plugin delegation, schema validation, richer artifact handling) additive.
 - Manifest/catalog model centralizes validation so new checks can be added in one path (`doctor` + runtime preflight).
 - Output contract is in `pkg/contract` to prevent accidental breaking changes in machine clients.
+- Relative task commands (for example `./script.sh`) resolve from the task's effective execution cwd.
