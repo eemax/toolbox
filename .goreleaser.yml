@@ -1,0 +1,28 @@
+version: 2
+
+project_name: toolbox
+
+builds:
+  - id: toolbox
+    main: ./cmd/toolbox
+    binary: toolbox
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    env:
+      - CGO_ENABLED=0
+
+archives:
+  - id: default
+    formats: [tar.gz]
+    files:
+      - README.md
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  use: github

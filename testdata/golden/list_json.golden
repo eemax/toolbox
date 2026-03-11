@@ -1,0 +1,14 @@
+{
+  "config": {
+    "log_level": "info"
+  },
+  "task_count": 1,
+  "tasks": [
+    {
+      "name": "hello",
+      "description": "Print hello",
+      "input_mode": "none",
+      "source": "<TMP>/.toolbox/tasks/hello.yaml"
+    }
+  ]
+}

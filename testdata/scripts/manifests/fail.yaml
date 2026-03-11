@@ -1,0 +1,7 @@
+name: fail
+description: non-zero task
+command: false
+input:
+  mode: none
+output:
+  mode: text

@@ -1,0 +1,16 @@
+mkdir .toolbox
+mkdir .toolbox/tasks
+cp $PROJECT_ROOT/testdata/scripts/manifests/hello.yaml .toolbox/tasks/hello.yaml
+cp $PROJECT_ROOT/.toolbox/config.yaml .toolbox/config.yaml
+
+exec $TOOLBOX_BIN list
+stdout 'hello'
+
+exec $TOOLBOX_BIN run hello
+stdout 'Status: ok'
+
+exec $TOOLBOX_BIN run hello --json
+stdout '"ok": true'
+
+exec $TOOLBOX_BIN doctor
+stdout 'doctor: ok'

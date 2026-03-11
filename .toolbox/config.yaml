@@ -1,0 +1,5 @@
+log_level: info
+output:
+  capture_limit_bytes: 1048576
+execution:
+  default_timeout: 60s

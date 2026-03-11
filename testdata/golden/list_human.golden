@@ -1,0 +1,4 @@
+hello
+  description: Print hello
+  input_mode: none
+  source: <TMP>/.toolbox/tasks/hello.yaml

@@ -1,0 +1,13 @@
+name: hello
+description: Print a hello message
+command: /bin/echo
+args:
+  - Hello from toolbox
+input:
+  mode: none
+output:
+  mode: text
+requires:
+  - /bin/echo
+tags:
+  - personal

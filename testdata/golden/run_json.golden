@@ -1,0 +1,14 @@
+{
+  "task": "hello",
+  "ok": true,
+  "exit_code": 0,
+  "duration_ms": 0,
+  "stdout": "hello\n",
+  "stderr": "",
+  "artifacts": [],
+  "started_at": "<ts>",
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_bytes": 6,
+  "stderr_bytes": 0
+}

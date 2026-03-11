@@ -1,0 +1,31 @@
+{
+  "config": {
+    "log_level": "info",
+    "output": {
+      "capture_limit_bytes": 1048576
+    },
+    "execution": {
+      "default_timeout": 60000000000,
+      "redact_keys": [
+        "TOKEN",
+        "SECRET",
+        "PASSWORD",
+        "KEY"
+      ],
+      "allow_paths": [],
+      "deny_paths": []
+    }
+  },
+  "sources": {
+    "precedence": [
+      "flags",
+      "environment (TOOLBOX_*)",
+      "project config (.toolbox/config.yaml)",
+      "user config (~/.config/toolbox/config.yaml)",
+      "built-in defaults"
+    ],
+    "project_config": "<TMP>/.toolbox/config.yaml",
+    "env_overrides": [],
+    "flag_overrides": []
+  }
+}

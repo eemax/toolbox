@@ -1,0 +1,9 @@
+name: dup
+description: duplicate task
+command: /bin/echo
+args:
+  - dup
+input:
+  mode: none
+output:
+  mode: text

@@ -1,0 +1,13 @@
+name: show-file
+description: Print a file passed via --input
+command: cat
+args:
+  - "{{input.file}}"
+input:
+  mode: file
+output:
+  mode: text
+requires:
+  - cat
+tags:
+  - files

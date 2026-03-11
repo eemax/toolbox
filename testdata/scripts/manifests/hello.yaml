@@ -1,0 +1,9 @@
+name: hello
+description: hello task
+command: /bin/echo
+args:
+  - hello
+input:
+  mode: none
+output:
+  mode: text

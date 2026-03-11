@@ -1,0 +1,9 @@
+name: timeout
+description: timeout task
+command: sleep
+args:
+  - "1"
+input:
+  mode: none
+output:
+  mode: text

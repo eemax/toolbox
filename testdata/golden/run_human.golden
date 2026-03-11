@@ -1,0 +1,8 @@
+Task: hello
+Status: ok
+Exit Code: 0
+Duration: <ms>
+Started At: <ts>
+Stdout:
+hello
+

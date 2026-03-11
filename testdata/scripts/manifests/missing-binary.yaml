@@ -1,0 +1,7 @@
+name: missing-bin
+description: uses missing binary
+command: toolbox-definitely-missing
+input:
+  mode: none
+output:
+  mode: text

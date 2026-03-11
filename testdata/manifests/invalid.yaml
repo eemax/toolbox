@@ -1,0 +1,4 @@
+name: invalid
+command: /bin/echo
+input:
+  mode: bad-mode

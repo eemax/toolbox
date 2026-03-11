@@ -1,0 +1,9 @@
+name: hello
+description: Print hello
+command: /bin/echo
+args:
+  - hello
+input:
+  mode: none
+output:
+  mode: text

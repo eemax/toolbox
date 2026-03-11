@@ -1,0 +1,25 @@
+mkdir .toolbox
+mkdir .toolbox/tasks
+
+cp $PROJECT_ROOT/testdata/scripts/manifests/missing-binary.yaml .toolbox/tasks/missing.yaml
+! exec $TOOLBOX_BIN run missing-bin
+stdout 'Status: failed'
+stderr 'command "toolbox-definitely-missing" not found in PATH'
+
+rm .toolbox/tasks/missing.yaml
+cp $PROJECT_ROOT/testdata/scripts/manifests/timeout.yaml .toolbox/tasks/timeout.yaml
+! exec $TOOLBOX_BIN run timeout --timeout 100ms
+stdout 'Status: failed'
+stderr 'timed out after 100ms'
+
+rm .toolbox/tasks/timeout.yaml
+cp $PROJECT_ROOT/testdata/scripts/manifests/fail.yaml .toolbox/tasks/fail.yaml
+! exec $TOOLBOX_BIN run fail
+stdout 'Exit Code: 1'
+stderr 'exited with code 1'
+
+rm .toolbox/tasks/fail.yaml
+cp $PROJECT_ROOT/testdata/scripts/manifests/dup.yaml .toolbox/tasks/dup.yaml
+cp $PROJECT_ROOT/testdata/scripts/manifests/dup.yaml home/.config/toolbox/tasks/dup.yaml
+! exec $TOOLBOX_BIN list
+stderr 'duplicate task "dup"'

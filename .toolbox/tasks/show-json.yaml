@@ -1,0 +1,16 @@
+name: show-json
+description: Output json input contents
+command: cat
+args:
+  - "{{input.file}}"
+input:
+  mode: json
+output:
+  mode: json
+timeout: 30s
+requires:
+  - cat
+env:
+  LOG_LEVEL: "{{config.log_level}}"
+tags:
+  - data

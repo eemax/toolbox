@@ -1,0 +1,32 @@
+Config precedence (highest to lowest):
+- flags
+- environment (TOOLBOX_*)
+- project config (.toolbox/config.yaml)
+- user config (~/.config/toolbox/config.yaml)
+- built-in defaults
+
+Sources:
+- user: (not found)
+- project: <TMP>/.toolbox/config.yaml
+- explicit: (not set)
+- env overrides: (none)
+- flag overrides: (none)
+
+Resolved:
+{
+  "log_level": "info",
+  "output": {
+    "capture_limit_bytes": 1048576
+  },
+  "execution": {
+    "default_timeout": 60000000000,
+    "redact_keys": [
+      "TOKEN",
+      "SECRET",
+      "PASSWORD",
+      "KEY"
+    ],
+    "allow_paths": [],
+    "deny_paths": []
+  }
+}
