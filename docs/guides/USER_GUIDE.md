@@ -6,7 +6,7 @@ toolbox runs named tasks defined in YAML manifests so you can call scripts and b
 
 ## Standard workflow
 
-1. Define tasks in `./.toolbox/tasks/*.yaml` (project) or `~/.config/toolbox/tasks/*.yaml` (user).
+1. Add tasks with `toolbox add python ...`, or define manifests manually in `./.toolbox/tasks/*.yaml` (project) / `~/.config/toolbox/tasks/*.yaml` (user).
 2. Run `toolbox doctor` to validate manifests and dependencies.
 3. Run `toolbox list` to inspect available tasks.
 4. Run `toolbox run <task>` for execution.
@@ -19,6 +19,33 @@ toolbox runs named tasks defined in YAML manifests so you can call scripts and b
 ```bash
 toolbox list
 toolbox list --json
+```
+
+### Add Python task
+
+```bash
+toolbox add python --name format-check --script ./tools/format_check.py
+toolbox add python --name format-check --script ./tools/format_check.py --arg --fast --tag ci --timeout 30s
+toolbox add python --from-spec ./toolbox-add-python.yaml --json
+```
+
+`toolbox add python` is deterministic and non-interactive:
+
+- Defaults to project scope (`./.toolbox/tasks` + `./.toolbox/scripts`).
+- Copies the source script into toolbox-managed scripts as `<task>.py`.
+- Fails fast on task/script conflicts unless `--overwrite` is set.
+- Runs preflight checks (interpreter, `py_compile`, generated manifest validation).
+
+`--from-spec` supports strict versioned YAML/JSON:
+
+```yaml
+api_version: toolbox.add.python/v1
+name: format-check
+script: ./tools/format_check.py
+python_bin: python3
+input_mode: none
+output_mode: text
+scope: project
 ```
 
 ### Run task

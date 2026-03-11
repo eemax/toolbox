@@ -1,0 +1,16 @@
+api_version: toolbox.add.python/v1
+name: spec-task
+script: ./tools/spec.py
+description: added from spec
+python_bin: python3
+args:
+  - --flag
+env:
+  TOOLBOX_MODE: spec
+timeout: 20s
+cwd: .
+tags:
+  - from-spec
+input_mode: none
+output_mode: text
+scope: project

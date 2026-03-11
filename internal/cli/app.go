@@ -13,6 +13,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"toolbox/internal/add"
 	"toolbox/internal/config"
 	"toolbox/internal/doctor"
 	"toolbox/internal/manifest"
@@ -89,6 +90,23 @@ type runFlags struct {
 	Timeout       string
 }
 
+type addPythonFlags struct {
+	FromSpec    string
+	Name        string
+	Script      string
+	Description string
+	Args        []string
+	Env         []string
+	Timeout     string
+	CWD         string
+	Tags        []string
+	InputMode   string
+	OutputMode  string
+	PythonBin   string
+	Scope       string
+	Overwrite   bool
+}
+
 func (a *App) rootCommand() *cobra.Command {
 	global := &globalFlags{}
 
@@ -106,6 +124,7 @@ func (a *App) rootCommand() *cobra.Command {
 	root.AddCommand(
 		a.newListCommand(global),
 		a.newRunCommand(global),
+		a.newAddCommand(global),
 		a.newDoctorCommand(global),
 		a.newConfigCommand(global),
 		a.newVersionCommand(),
@@ -253,6 +272,101 @@ func (a *App) newRunCommand(global *globalFlags) *cobra.Command {
 	cmd.Flags().BoolVar(&runOpts.DryRun, "dry-run", false, "Print resolved execution plan without running")
 	cmd.Flags().BoolVar(&runOpts.DryRunFullEnv, "dry-run-full-env", false, "Include inherited environment in dry-run output (redacted)")
 	cmd.Flags().StringVar(&runOpts.Timeout, "timeout", "", "Override timeout for this run (e.g. 30s)")
+	return cmd
+}
+
+func (a *App) newAddCommand(global *globalFlags) *cobra.Command {
+	addCmd := &cobra.Command{
+		Use:   "add",
+		Short: "Add new tasks",
+	}
+	addCmd.AddCommand(a.newAddPythonCommand(global))
+	return addCmd
+}
+
+func (a *App) newAddPythonCommand(global *globalFlags) *cobra.Command {
+	opts := &addPythonFlags{}
+	cmd := &cobra.Command{
+		Use:   "python",
+		Short: "Add a Python script task",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			cwd, err := os.Getwd()
+			if err != nil {
+				return &ExitError{Code: 1, Message: fmt.Sprintf("resolve cwd: %v", err)}
+			}
+			home := strings.TrimSpace(a.env["HOME"])
+			if home == "" {
+				home, err = os.UserHomeDir()
+				if err != nil {
+					return &ExitError{Code: 1, Message: fmt.Sprintf("resolve home dir: %v", err)}
+				}
+			}
+
+			flagNames := []string{
+				"from-spec", "name", "script", "description", "arg", "env", "timeout",
+				"cwd", "tag", "input-mode", "output-mode", "python-bin", "scope", "overwrite",
+			}
+			changed := make(map[string]bool, len(flagNames))
+			for _, flagName := range flagNames {
+				changed[flagName] = cmd.Flags().Changed(flagName)
+			}
+
+			result, err := add.AddPython(add.PythonOptions{
+				CWD:         cwd,
+				HomeDir:     home,
+				FromSpec:    opts.FromSpec,
+				Name:        opts.Name,
+				Script:      opts.Script,
+				Description: opts.Description,
+				Args:        opts.Args,
+				Env:         opts.Env,
+				Timeout:     opts.Timeout,
+				TaskCWD:     opts.CWD,
+				Tags:        opts.Tags,
+				InputMode:   opts.InputMode,
+				OutputMode:  opts.OutputMode,
+				PythonBin:   opts.PythonBin,
+				Scope:       opts.Scope,
+				Overwrite:   opts.Overwrite,
+				Changed:     changed,
+			})
+			if err != nil {
+				return &ExitError{Code: 1, Message: err.Error()}
+			}
+
+			if global.JSON {
+				return output.JSON(a.stdout, result)
+			}
+
+			fmt.Fprintf(a.stdout, "Created task %q\n", result.Task)
+			fmt.Fprintf(a.stdout, "Scope: %s\n", result.Scope)
+			fmt.Fprintf(a.stdout, "Manifest: %s\n", result.ManifestPath)
+			fmt.Fprintf(a.stdout, "Script: %s\n", result.ScriptPath)
+			fmt.Fprintf(a.stdout, "Python: %s\n", result.PythonBin)
+			fmt.Fprintln(a.stdout, "Checks:")
+			for _, check := range result.Checks {
+				fmt.Fprintf(a.stdout, "- %s: %s\n", check.Name, check.Status)
+			}
+			fmt.Fprintf(a.stdout, "Next: %s\n", result.NextCommand)
+			return nil
+		},
+	}
+
+	cmd.Flags().StringVar(&opts.FromSpec, "from-spec", "", "Path to YAML/JSON add specification")
+	cmd.Flags().StringVar(&opts.Name, "name", "", "Task name")
+	cmd.Flags().StringVar(&opts.Script, "script", "", "Path to source python script")
+	cmd.Flags().StringVar(&opts.Description, "description", "", "Task description")
+	cmd.Flags().StringArrayVar(&opts.Args, "arg", nil, "Task argument (repeatable)")
+	cmd.Flags().StringArrayVar(&opts.Env, "env", nil, "Task environment variable KEY=VALUE (repeatable)")
+	cmd.Flags().StringVar(&opts.Timeout, "timeout", "", "Task timeout duration (e.g. 30s)")
+	cmd.Flags().StringVar(&opts.CWD, "cwd", "", "Task working directory")
+	cmd.Flags().StringArrayVar(&opts.Tags, "tag", nil, "Task tag (repeatable)")
+	cmd.Flags().StringVar(&opts.InputMode, "input-mode", "", "Task input mode (none|file|json)")
+	cmd.Flags().StringVar(&opts.OutputMode, "output-mode", "", "Task output mode (text|json)")
+	cmd.Flags().StringVar(&opts.PythonBin, "python-bin", "", "Python interpreter binary")
+	cmd.Flags().StringVar(&opts.Scope, "scope", "", "Target scope (project|user)")
+	cmd.Flags().BoolVar(&opts.Overwrite, "overwrite", false, "Overwrite existing generated files")
 	return cmd
 }
 

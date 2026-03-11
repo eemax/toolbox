@@ -101,6 +101,78 @@ output:
 	}
 }
 
+func TestGoldenAddOutputs(t *testing.T) {
+	repoRoot := projectRoot(t)
+	cwd := t.TempDir()
+	home := filepath.Join(cwd, "home")
+	if err := os.MkdirAll(filepath.Join(home, ".config", "toolbox"), 0o755); err != nil {
+		t.Fatalf("mkdir user config dir: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(cwd, "source.py"), []byte("print('golden')\n"), 0o644); err != nil {
+		t.Fatalf("write source script: %v", err)
+	}
+
+	oldWD, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("getwd: %v", err)
+	}
+	if err := os.Chdir(cwd); err != nil {
+		t.Fatalf("chdir: %v", err)
+	}
+	t.Cleanup(func() {
+		_ = os.Chdir(oldWD)
+	})
+
+	cases := []struct {
+		name     string
+		args     []string
+		exitCode int
+	}{
+		{
+			name:     "add_python_human",
+			args:     []string{"add", "python", "--name", "py-golden", "--script", "./source.py", "--python-bin", "/bin/echo"},
+			exitCode: 0,
+		},
+		{
+			name:     "add_python_json",
+			args:     []string{"add", "python", "--name", "py-golden-json", "--script", "./source.py", "--python-bin", "/bin/echo", "--json"},
+			exitCode: 0,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			stdout := &bytes.Buffer{}
+			stderr := &bytes.Buffer{}
+			env := map[string]string{
+				"HOME": home,
+				"PATH": os.Getenv("PATH"),
+			}
+			app := New("test", stdout, stderr, env)
+			root := app.rootCommand()
+			root.SetArgs(tc.args)
+			err := root.Execute()
+			actualExit := 0
+			if err != nil {
+				var exitErr *ExitError
+				if errors.As(err, &exitErr) {
+					actualExit = exitErr.Code
+				} else {
+					t.Fatalf("unexpected command error: %v", err)
+				}
+			}
+			if actualExit != tc.exitCode {
+				t.Fatalf("expected exit %d got %d (stderr=%s)", tc.exitCode, actualExit, stderr.String())
+			}
+			output := normalizeOutput(tc.name, stdout.String(), cwd)
+			golden := readGolden(t, repoRoot, tc.name)
+			if output != golden {
+				t.Fatalf("golden mismatch for %s\n--- actual ---\n%s\n--- expected ---\n%s", tc.name, output, golden)
+			}
+		})
+	}
+}
+
 func normalizeOutput(name, value, cwd string) string {
 	value = strings.ReplaceAll(value, "/private"+cwd, "<TMP>")
 	value = strings.ReplaceAll(value, cwd, "<TMP>")

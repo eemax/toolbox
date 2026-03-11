@@ -7,6 +7,7 @@ toolbox is a modular Go CLI that unifies execution of local scripts and tools (b
 `toolbox` provides:
 
 - Consistent command UX: `list`, `run`, `doctor`, `config show`, `version`
+- Task scaffolding UX: `add python` for agent-friendly task creation
 - Task definitions in YAML from project and user scopes
 - Deterministic config precedence and task resolution
 - Safe process execution defaults (timeouts, binary preflight checks, path policy)
@@ -80,6 +81,7 @@ YAML
 ### Core commands
 
 - `toolbox list`
+- `toolbox add python --name <task> --script <path>`
 - `toolbox run <task> [--input <file>] [--dry-run] [--timeout <duration>]`
 - `toolbox run <task> [--input <file>] [--dry-run] [--dry-run-full-env] [--timeout <duration>]`
 - `toolbox doctor`

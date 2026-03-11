@@ -213,6 +213,11 @@ func validateTask(task Task) error {
 	return nil
 }
 
+// ValidateTask validates a task value without source file context.
+func ValidateTask(task Task) error {
+	return validateTask(task)
+}
+
 func isValidInputMode(mode InputMode) bool {
 	switch mode {
 	case "", InputModeNone, InputModeFile, InputModeJSON:

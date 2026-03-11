@@ -3,7 +3,7 @@
 ## Current state
 
 - Core v1 CLI scaffold is implemented and structured by subsystem in `internal/`.
-- Commands implemented: `list`, `run`, `doctor`, `config show`, `version`.
+- Commands implemented: `list`, `run`, `add python`, `doctor`, `config show`, `version`.
 - Config precedence and manifest loading are working with duplicate-name hard errors.
 - Runner enforces timeouts, validates dependencies, applies variable templates, supports dry-run, and emits normalized envelopes.
 - Preflight failures now include the reason in envelope `stderr` for JSON consumers.

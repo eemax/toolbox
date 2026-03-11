@@ -23,12 +23,14 @@ flowchart LR
   B --> C[Load manifests]
   C --> D{Command type}
   D -->|list| E[List tasks]
+  D -->|add python| M[Validate + scaffold task files]
   D -->|doctor| F[Run diagnostics]
   D -->|run| G[Resolve task + vars]
   G --> H[Validate requires + policy]
   H --> I[Execute process with timeout]
   I --> J[Capture capped stdout/stderr]
   E --> K[Render output]
+  M --> K
   F --> K
   J --> K
   K --> L[Human or JSON response]

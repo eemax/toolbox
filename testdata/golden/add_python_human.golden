@@ -1,0 +1,10 @@
+Created task "py-golden"
+Scope: project
+Manifest: <TMP>/.toolbox/tasks/py-golden.yaml
+Script: <TMP>/.toolbox/scripts/py-golden.py
+Python: /bin/echo
+Checks:
+- interpreter: ok
+- py_compile: ok
+- manifest: ok
+Next: toolbox run py-golden

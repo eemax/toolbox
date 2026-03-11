@@ -1,0 +1,24 @@
+{
+  "status": "created",
+  "task": "py-golden-json",
+  "scope": "project",
+  "manifest_path": "<TMP>/.toolbox/tasks/py-golden-json.yaml",
+  "script_path": "<TMP>/.toolbox/scripts/py-golden-json.py",
+  "overwritten": false,
+  "python_bin": "/bin/echo",
+  "checks": [
+    {
+      "name": "interpreter",
+      "status": "ok"
+    },
+    {
+      "name": "py_compile",
+      "status": "ok"
+    },
+    {
+      "name": "manifest",
+      "status": "ok"
+    }
+  ],
+  "next_command": "toolbox run py-golden-json"
+}

@@ -74,6 +74,11 @@ func ProjectTaskDir(cwd string) string {
 	return filepath.Join(cwd, ".toolbox", "tasks")
 }
 
+// ProjectScriptDir returns the project script directory.
+func ProjectScriptDir(cwd string) string {
+	return filepath.Join(cwd, ".toolbox", "scripts")
+}
+
 // UserConfigPath returns the user config location.
 func UserConfigPath(home string) string {
 	return filepath.Join(home, ".config", "toolbox", "config.yaml")
@@ -82,6 +87,11 @@ func UserConfigPath(home string) string {
 // UserTaskDir returns the user task directory.
 func UserTaskDir(home string) string {
 	return filepath.Join(home, ".config", "toolbox", "tasks")
+}
+
+// UserScriptDir returns the user script directory.
+func UserScriptDir(home string) string {
+	return filepath.Join(home, ".config", "toolbox", "scripts")
 }
 
 // Load resolves configuration according to precedence.
