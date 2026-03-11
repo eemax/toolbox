@@ -35,6 +35,7 @@
 - Contracts: `pkg/contract/envelope.go`
 - Integration scripts: `testdata/scripts/`
 - New baseline test entry points: `tests/unit/`, `tests/integration/`
+- Example local config/task manifests: `examples/.toolbox/`
 
 ## Next actions for new agents
 

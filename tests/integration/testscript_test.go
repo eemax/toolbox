@@ -1,4 +1,4 @@
-package toolbox
+package integration_test
 
 import (
 	"os"
@@ -10,10 +10,7 @@ import (
 )
 
 func TestScripts(t *testing.T) {
-	projectRoot, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("getwd: %v", err)
-	}
+	projectRoot := repoRoot(t)
 
 	testscript.Run(t, testscript.Params{
 		Dir: filepath.Join(projectRoot, "testdata", "scripts"),

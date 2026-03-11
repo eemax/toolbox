@@ -1,7 +1,7 @@
 mkdir .toolbox
 mkdir .toolbox/tasks
 cp $PROJECT_ROOT/testdata/scripts/manifests/hello.yaml .toolbox/tasks/hello.yaml
-cp $PROJECT_ROOT/.toolbox/config.yaml .toolbox/config.yaml
+cp $PROJECT_ROOT/examples/.toolbox/config.yaml .toolbox/config.yaml
 
 exec $TOOLBOX_BIN list
 stdout 'hello'

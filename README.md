@@ -128,5 +128,6 @@ tests/unit/             # sample unit test entry points
 tests/integration/      # sample integration test entry points
 tests/fixtures/         # fixture files used by tests
 testdata/               # golden and testscript assets
+examples/.toolbox/      # sample local config and task manifests
 docs/                   # user, architecture, and agent documentation
 ```

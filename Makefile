@@ -16,7 +16,6 @@ test-unit:
 test-integration:
 	$(GO) test ./tests/integration/... -count=1
 	$(GO) test ./internal/cli -run TestGoldenOutputs -count=1
-	$(GO) test ./ -run TestScripts -count=1
 
 test-watch:
 	./scripts/test-watch.sh
