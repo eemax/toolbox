@@ -223,6 +223,41 @@ func TestAddPythonCreatesFiles(t *testing.T) {
 	}
 }
 
+func TestResolveOptionsBundledScopeWritesPortablePaths(t *testing.T) {
+	t.Parallel()
+	cwd := t.TempDir()
+	home := filepath.Join(cwd, "home")
+	if err := os.MkdirAll(home, 0o755); err != nil {
+		t.Fatalf("mkdir home: %v", err)
+	}
+	source := filepath.Join(cwd, "portable.py")
+	if err := os.WriteFile(source, []byte("print('portable')\n"), 0o644); err != nil {
+		t.Fatalf("write source: %v", err)
+	}
+
+	adder := pythonAdder{}
+	cfg, err := adder.resolveOptions(PythonOptions{
+		CWD:     cwd,
+		HomeDir: home,
+		Name:    "portable-task",
+		Script:  "./portable.py",
+		Scope:   "bundled",
+		Changed: changed("name", "script", "scope"),
+	})
+	if err != nil {
+		t.Fatalf("resolve options: %v", err)
+	}
+	if cfg.Scope != "bundled" {
+		t.Fatalf("scope mismatch: %s", cfg.Scope)
+	}
+	if cfg.TaskDir != config.ProjectBundledTaskDir(cwd) {
+		t.Fatalf("task dir mismatch: %s", cfg.TaskDir)
+	}
+	if cfg.ScriptDir != config.ProjectBundledScriptDir(cwd) {
+		t.Fatalf("script dir mismatch: %s", cfg.ScriptDir)
+	}
+}
+
 func TestAddPythonRejectsInvalidEnv(t *testing.T) {
 	t.Parallel()
 	cwd := t.TempDir()

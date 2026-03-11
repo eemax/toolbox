@@ -91,3 +91,35 @@ func TestLoadDuplicateNames(t *testing.T) {
 		t.Fatalf("duplicate task should not be runnable")
 	}
 }
+
+func TestLoadFromMultipleProjectDirs(t *testing.T) {
+	t.Parallel()
+	tempDir := t.TempDir()
+	projectPrimary := filepath.Join(tempDir, "project-primary")
+	projectBundled := filepath.Join(tempDir, "project-bundled")
+	if err := os.MkdirAll(projectPrimary, 0o755); err != nil {
+		t.Fatalf("mkdir primary project dir: %v", err)
+	}
+	if err := os.MkdirAll(projectBundled, 0o755); err != nil {
+		t.Fatalf("mkdir bundled project dir: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(projectPrimary, "legacy.yaml"), []byte("name: legacy\ncommand: /bin/echo\n"), 0o644); err != nil {
+		t.Fatalf("write primary manifest: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(projectBundled, "portable.yaml"), []byte("name: portable\ncommand: /bin/echo\n"), 0o644); err != nil {
+		t.Fatalf("write bundled manifest: %v", err)
+	}
+
+	catalog := Load(LoadOptions{
+		ProjectDirs: []string{projectPrimary, projectBundled},
+	})
+	if err := catalog.FatalError(); err != nil {
+		t.Fatalf("expected valid catalog, got error: %v", err)
+	}
+	if _, ok := catalog.Tasks["legacy"]; !ok {
+		t.Fatalf("expected legacy task from primary project dir")
+	}
+	if _, ok := catalog.Tasks["portable"]; !ok {
+		t.Fatalf("expected portable task from bundled project dir")
+	}
+}

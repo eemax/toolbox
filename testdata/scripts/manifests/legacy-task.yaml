@@ -1,0 +1,8 @@
+name: legacy-task
+command: /bin/echo
+args:
+  - legacy-ok
+input:
+  mode: none
+output:
+  mode: text

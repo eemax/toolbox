@@ -1,0 +1,8 @@
+name: bundled-task
+command: /bin/echo
+args:
+  - bundled-ok
+input:
+  mode: none
+output:
+  mode: text

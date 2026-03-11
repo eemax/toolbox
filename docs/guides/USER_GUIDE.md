@@ -6,7 +6,7 @@ toolbox runs named tasks defined in YAML manifests so you can call scripts and b
 
 ## Standard workflow
 
-1. Add tasks with `toolbox add python ...`, or define manifests manually in `./.toolbox/tasks/*.yaml` (project) / `~/.config/toolbox/tasks/*.yaml` (user).
+1. Add tasks with `toolbox add python ...`, or define manifests manually in `./.toolbox/tasks/*.yaml` or `./tasks/*.yaml` (project) / `~/.config/toolbox/tasks/*.yaml` (user).
 2. Run `toolbox doctor` to validate manifests and dependencies.
 3. Run `toolbox list` to inspect available tasks.
 4. Run `toolbox run <task>` for execution.
@@ -32,6 +32,7 @@ toolbox add python --from-spec ./toolbox-add-python.yaml --json
 `toolbox add python` is deterministic and non-interactive:
 
 - Defaults to project scope (`./.toolbox/tasks` + `./.toolbox/scripts`).
+- Supports bundled scope (`./tasks` + `./scripts`) for portable, repo-committed tasks.
 - Copies the source script into toolbox-managed scripts as `<task>.py`.
 - Fails fast on task/script conflicts unless `--overwrite` is set.
 - Runs preflight checks (interpreter, `py_compile`, generated manifest validation).
@@ -58,6 +59,14 @@ toolbox run hello --dry-run
 toolbox run hello --dry-run --dry-run-full-env
 ```
 
+For global usage, add a task once with `--scope user`, then run it from any folder. The task executes in your current shell directory unless the task manifest sets `cwd`.
+
+```bash
+toolbox add python --scope user --name refresh-lazy-skills-py --script /absolute/path/to/refresh-lazy-skills.py
+cd /path/to/target/project
+toolbox run refresh-lazy-skills-py
+```
+
 ### Validate environment
 
 ```bash
@@ -71,6 +80,21 @@ toolbox doctor --json
 toolbox config show
 toolbox config show --json
 ```
+
+### Zsh completion
+
+```bash
+toolbox completion zsh > ~/.zsh/completions/_toolbox
+```
+
+Ensure `~/.zshrc` has:
+
+```bash
+fpath=(~/.zsh/completions $fpath)
+autoload -Uz compinit && compinit
+```
+
+Completion supports commands, flags, and dynamic task names for `toolbox run <task>`.
 
 ## Config behavior
 
@@ -115,3 +139,4 @@ toolbox run <task> --dry-run
 
 By default, dry-run only shows task-level environment overrides. Use `--dry-run-full-env` to include inherited process environment values.
 Sensitive env variables are redacted based on configured redaction keys.
+If a project only has `./.toolbox/tasks` and not `./tasks`, toolbox warns to migrate toward the bundled/portable layout.

@@ -1,0 +1,25 @@
+mkdir .toolbox
+mkdir .toolbox/tasks
+
+cp $PROJECT_ROOT/testdata/scripts/manifests/local-task.yaml .toolbox/tasks/local-task.yaml
+cp $PROJECT_ROOT/testdata/scripts/manifests/user-task.yaml home/.config/toolbox/tasks/user-task.yaml
+
+exec $TOOLBOX_BIN __complete run l
+stdout 'local-task'
+stdout ':4'
+
+exec $TOOLBOX_BIN __complete run u
+stdout 'user-task'
+stdout ':4'
+
+exec $TOOLBOX_BIN __complete add python --scope p
+stdout 'project'
+stdout ':4'
+
+exec $TOOLBOX_BIN __complete add python --scope b
+stdout 'bundled'
+stdout ':4'
+
+exec $TOOLBOX_BIN __complete --log-level d
+stdout 'debug'
+stdout ':4'

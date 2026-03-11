@@ -1,0 +1,8 @@
+name: dup-all
+command: /bin/echo
+args:
+  - from-legacy
+input:
+  mode: none
+output:
+  mode: text

@@ -1,0 +1,9 @@
+name: user-task
+description: User completion fixture
+command: /bin/echo
+args:
+  - user
+input:
+  mode: none
+output:
+  mode: text

@@ -1,0 +1,9 @@
+name: local-task
+description: Local completion fixture
+command: /bin/echo
+args:
+  - local
+input:
+  mode: none
+output:
+  mode: text

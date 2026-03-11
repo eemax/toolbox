@@ -18,3 +18,33 @@ jobs:
           go-version: stable
       - name: Test
         run: go test ./...
+
+  quality-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - name: Vet
+        run: go vet ./...
+      - name: Race Tests
+        run: go test -race ./...
+      - name: Coverage Floors
+        run: ./scripts/check-coverage.sh
+
+  benchmark-smoke:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - name: Benchmark Smoke
+        run: make bench-smoke | tee benchmark.txt
+      - name: Upload Benchmark Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-smoke
+          path: benchmark.txt

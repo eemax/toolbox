@@ -33,6 +33,31 @@ make build
 
 Binary output is written to `bin/toolbox`.
 
+### Install globally (recommended)
+
+```bash
+make install
+toolbox version
+```
+
+This installs `toolbox` to `~/.local/bin/toolbox` by default.
+It also refreshes Zsh completion at `~/.zsh/completions/_toolbox`.
+
+### Zsh completion
+
+```bash
+make install-zsh-completion
+```
+
+Then ensure your `~/.zshrc` includes:
+
+```bash
+fpath=(~/.zsh/completions $fpath)
+autoload -Uz compinit && compinit
+```
+
+Completion includes commands, flags, and dynamic task names for `toolbox run <task>` from both project and user task catalogs.
+
 ## Quickstart
 
 1. Create a task manifest:
@@ -55,25 +80,25 @@ YAML
 2. Validate setup:
 
 ```bash
-./bin/toolbox doctor
+toolbox doctor
 ```
 
 3. List tasks:
 
 ```bash
-./bin/toolbox list
+toolbox list
 ```
 
 4. Run a task:
 
 ```bash
-./bin/toolbox run hello
+toolbox run hello
 ```
 
 5. Run in JSON mode:
 
 ```bash
-./bin/toolbox run hello --json
+toolbox run hello --json
 ```
 
 ## Usage
@@ -82,11 +107,15 @@ YAML
 
 - `toolbox list`
 - `toolbox add python --name <task> --script <path>`
+- `toolbox add python --scope bundled --name <task> --script <path>` (writes to `./tasks` + `./scripts`)
 - `toolbox run <task> [--input <file>] [--dry-run] [--timeout <duration>]`
 - `toolbox run <task> [--input <file>] [--dry-run] [--dry-run-full-env] [--timeout <duration>]`
 - `toolbox doctor`
 - `toolbox config show`
 - `toolbox version`
+
+Project task discovery includes both `./.toolbox/tasks` and `./tasks`.
+When only `./.toolbox/tasks` exists, toolbox emits a warning encouraging migration to `./tasks`.
 
 ### Global flags
 
@@ -107,9 +136,13 @@ make test
 Available task scripts:
 
 - `make build`
+- `make install`
+- `make install-zsh-completion`
 - `make test`
 - `make test-unit`
 - `make test-integration`
+- `make quality`
+- `make bench-smoke`
 - `make test-watch`
 
 ## Documentation Map

@@ -1,0 +1,28 @@
+mkdir .toolbox
+mkdir .toolbox/tasks
+mkdir tasks
+
+cp $PROJECT_ROOT/testdata/scripts/manifests/legacy-task.yaml .toolbox/tasks/legacy-task.yaml
+cp $PROJECT_ROOT/testdata/scripts/manifests/bundled-task.yaml tasks/bundled-task.yaml
+
+exec $TOOLBOX_BIN list
+stdout 'legacy-task'
+stdout 'bundled-task'
+
+exec $TOOLBOX_BIN run legacy-task
+stdout 'Status: ok'
+stdout 'legacy-ok'
+
+exec $TOOLBOX_BIN run bundled-task
+stdout 'Status: ok'
+stdout 'bundled-ok'
+
+cp $PROJECT_ROOT/testdata/scripts/manifests/dup-all-legacy.yaml .toolbox/tasks/dup-all-legacy.yaml
+cp $PROJECT_ROOT/testdata/scripts/manifests/dup-all-bundled.yaml tasks/dup-all-bundled.yaml
+cp $PROJECT_ROOT/testdata/scripts/manifests/dup-all-user.yaml home/.config/toolbox/tasks/dup-all-user.yaml
+
+! exec $TOOLBOX_BIN list
+stderr 'duplicate task "dup-all"'
+stderr 'project-legacy'
+stderr 'project-bundled'
+stderr 'user'

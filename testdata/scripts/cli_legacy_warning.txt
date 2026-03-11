@@ -1,0 +1,7 @@
+mkdir .toolbox
+mkdir .toolbox/tasks
+cp $PROJECT_ROOT/testdata/scripts/manifests/hello.yaml .toolbox/tasks/hello.yaml
+
+exec $TOOLBOX_BIN list
+stderr 'legacy task layout'
+stdout 'hello'

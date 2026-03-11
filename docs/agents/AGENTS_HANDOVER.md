@@ -9,6 +9,10 @@
 - Preflight failures now include the reason in envelope `stderr` for JSON consumers.
 - Dry-run defaults to task-level env delta; `--dry-run-full-env` opt-in includes inherited env.
 - Relative task command paths resolve from the task's effective cwd.
+- CLI command wiring is now split across focused `internal/cli/cmd_*.go` files.
+- `add python` internals are split across focused files in `internal/add/`.
+- Task catalogs are category-aware (`user`, `project-legacy`, `project-bundled`).
+- CI now includes race tests (Linux), `go vet`, coverage floor checks, and benchmark smoke artifact upload.
 - CI (`.github/workflows/ci.yml`) and release config (`.goreleaser.yml`) are present.
 
 ## Priority areas for next iterations

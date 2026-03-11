@@ -62,3 +62,8 @@ Dry-run outputs a separate envelope with resolved command/args/cwd/timeout/env (
 - Manifest/catalog model centralizes validation so new checks can be added in one path (`doctor` + runtime preflight).
 - Output contract is in `pkg/contract` to prevent accidental breaking changes in machine clients.
 - Relative task commands (for example `./script.sh`) resolve from the task's effective execution cwd.
+- Task catalog resolution uses categorized sources:
+  - `user` (`~/.config/toolbox/tasks`)
+  - `project-legacy` (`./.toolbox/tasks`)
+  - `project-bundled` (`./tasks`)
+  Duplicate names remain hard errors across all categories.

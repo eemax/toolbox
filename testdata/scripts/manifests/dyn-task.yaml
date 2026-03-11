@@ -1,0 +1,8 @@
+name: dyn-task
+command: /bin/echo
+args:
+  - dyn
+input:
+  mode: none
+output:
+  mode: text

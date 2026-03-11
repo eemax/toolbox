@@ -74,9 +74,19 @@ func ProjectTaskDir(cwd string) string {
 	return filepath.Join(cwd, ".toolbox", "tasks")
 }
 
+// ProjectBundledTaskDir returns the portable project task directory.
+func ProjectBundledTaskDir(cwd string) string {
+	return filepath.Join(cwd, "tasks")
+}
+
 // ProjectScriptDir returns the project script directory.
 func ProjectScriptDir(cwd string) string {
 	return filepath.Join(cwd, ".toolbox", "scripts")
+}
+
+// ProjectBundledScriptDir returns the portable project script directory.
+func ProjectBundledScriptDir(cwd string) string {
+	return filepath.Join(cwd, "scripts")
 }
 
 // UserConfigPath returns the user config location.

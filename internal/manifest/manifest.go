@@ -60,14 +60,24 @@ type OutputSpec struct {
 
 // SourceInfo tracks where the task was loaded from.
 type SourceInfo struct {
-	Scope string `json:"scope"`
-	Path  string `json:"path"`
+	Scope    string `json:"scope"`
+	Category string `json:"category,omitempty"`
+	Path     string `json:"path"`
 }
 
 // LoadOptions defines where task manifests are loaded from.
 type LoadOptions struct {
-	ProjectDir string
-	UserDir    string
+	ProjectDir  string
+	ProjectDirs []string
+	UserDir     string
+	Sources     []SourceDir
+}
+
+// SourceDir defines one scope/category directory to load task manifests from.
+type SourceDir struct {
+	Scope    string
+	Category string
+	Dir      string
 }
 
 // Catalog contains all parsed tasks and diagnostics.
@@ -85,7 +95,7 @@ func Load(opts LoadOptions) Catalog {
 		DuplicateNames: map[string][]SourceInfo{},
 	}
 
-	loadFromDir := func(scope, dir string) {
+	loadFromDir := func(scope, category, dir string) {
 		if strings.TrimSpace(dir) == "" {
 			return
 		}
@@ -94,7 +104,7 @@ func Load(opts LoadOptions) Catalog {
 			if errors.Is(err, os.ErrNotExist) {
 				return
 			}
-			catalog.Errors = append(catalog.Errors, fmt.Errorf("read %s task directory %s: %w", scope, dir, err))
+			catalog.Errors = append(catalog.Errors, fmt.Errorf("read %s task directory %s: %w", sourceLabel(scope, category), dir, err))
 			return
 		}
 		for _, entry := range entries {
@@ -111,7 +121,7 @@ func Load(opts LoadOptions) Catalog {
 				catalog.Errors = append(catalog.Errors, err)
 				continue
 			}
-			task.Source = SourceInfo{Scope: scope, Path: path}
+			task.Source = SourceInfo{Scope: scope, Category: category, Path: path}
 			if existing, exists := catalog.Tasks[task.Name]; exists {
 				catalog.DuplicateNames[task.Name] = appendUniqueSources(catalog.DuplicateNames[task.Name], existing.Source)
 				catalog.DuplicateNames[task.Name] = appendUniqueSources(catalog.DuplicateNames[task.Name], task.Source)
@@ -122,9 +132,9 @@ func Load(opts LoadOptions) Catalog {
 		}
 	}
 
-	// User then project: duplicates are hard errors, so ordering only affects deterministic reporting.
-	loadFromDir("user", opts.UserDir)
-	loadFromDir("project", opts.ProjectDir)
+	for _, source := range normalizeSourceDirs(opts) {
+		loadFromDir(source.Scope, source.Category, source.Dir)
+	}
 
 	sort.Strings(catalog.TaskOrder)
 	for name := range catalog.DuplicateNames {
@@ -153,7 +163,7 @@ func (c Catalog) FatalError() error {
 			sources := c.DuplicateNames[name]
 			sourcePaths := make([]string, 0, len(sources))
 			for _, source := range sources {
-				sourcePaths = append(sourcePaths, fmt.Sprintf("%s (%s)", source.Path, source.Scope))
+				sourcePaths = append(sourcePaths, fmt.Sprintf("%s (%s)", source.Path, sourceInfoLabel(source)))
 			}
 			parts = append(parts, fmt.Sprintf("duplicate task %q found in: %s", name, strings.Join(sourcePaths, ", ")))
 		}
@@ -248,4 +258,78 @@ func appendUniqueSources(current []SourceInfo, source SourceInfo) []SourceInfo {
 		}
 	}
 	return append(current, source)
+}
+
+func normalizeProjectDirs(primary string, additional []string) []string {
+	seen := map[string]struct{}{}
+	out := make([]string, 0, 1+len(additional))
+	add := func(dir string) {
+		trimmed := strings.TrimSpace(dir)
+		if trimmed == "" {
+			return
+		}
+		clean := filepath.Clean(trimmed)
+		if _, exists := seen[clean]; exists {
+			return
+		}
+		seen[clean] = struct{}{}
+		out = append(out, clean)
+	}
+	add(primary)
+	for _, dir := range additional {
+		add(dir)
+	}
+	return out
+}
+
+func normalizeSourceDirs(opts LoadOptions) []SourceDir {
+	if len(opts.Sources) > 0 {
+		return dedupeSourceDirs(opts.Sources)
+	}
+
+	out := []SourceDir{}
+	if strings.TrimSpace(opts.UserDir) != "" {
+		out = append(out, SourceDir{Scope: "user", Category: "user", Dir: opts.UserDir})
+	}
+	for _, dir := range normalizeProjectDirs(opts.ProjectDir, opts.ProjectDirs) {
+		out = append(out, SourceDir{Scope: "project", Category: "project", Dir: dir})
+	}
+	return dedupeSourceDirs(out)
+}
+
+func dedupeSourceDirs(input []SourceDir) []SourceDir {
+	seen := map[string]struct{}{}
+	out := make([]SourceDir, 0, len(input))
+	for _, source := range input {
+		scope := strings.TrimSpace(source.Scope)
+		category := strings.TrimSpace(source.Category)
+		dir := filepath.Clean(strings.TrimSpace(source.Dir))
+		if dir == "." || dir == "" {
+			continue
+		}
+		if scope == "" {
+			scope = "project"
+		}
+		if category == "" {
+			category = scope
+		}
+		key := scope + "|" + category + "|" + dir
+		if _, exists := seen[key]; exists {
+			continue
+		}
+		seen[key] = struct{}{}
+		out = append(out, SourceDir{Scope: scope, Category: category, Dir: dir})
+	}
+	return out
+}
+
+func sourceLabel(scope, category string) string {
+	if strings.TrimSpace(category) != "" {
+		return category
+	}
+	return scope
+}
+
+func sourceInfoLabel(source SourceInfo) string {
+	return sourceLabel(source.Scope, source.Category)
 }

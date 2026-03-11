@@ -29,6 +29,14 @@ stdout '"next_command": "toolbox run spec-task"'
 exists .toolbox/tasks/spec-task.yaml
 exists .toolbox/scripts/spec-task.py
 
+exec $TOOLBOX_BIN add python --scope bundled --name bundled-task --script ./tools/ok.py
+stdout 'Created task "bundled-task"'
+exists tasks/bundled-task.yaml
+exists scripts/bundled-task.py
+
+exec $TOOLBOX_BIN run bundled-task
+stdout 'hello from add'
+
 cp $PROJECT_ROOT/testdata/scripts/python/bad.py tools/bad.py
 ! exec $TOOLBOX_BIN add python --name bad-task --script ./tools/bad.py
 stderr 'py_compile check failed'

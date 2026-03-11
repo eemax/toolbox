@@ -1,0 +1,12 @@
+mkdir .toolbox
+mkdir .toolbox/tasks
+
+cp $PROJECT_ROOT/testdata/scripts/manifests/dyn-task.yaml .toolbox/tasks/dyn-task.yaml
+exec $TOOLBOX_BIN __complete run d
+stdout 'dyn-task'
+stdout ':4'
+
+rm .toolbox/tasks/dyn-task.yaml
+exec $TOOLBOX_BIN __complete run d
+! stdout 'dyn-task'
+stdout ':4'

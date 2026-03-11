@@ -64,7 +64,11 @@ func Run(cfg config.LoadedConfig, catalog manifest.Catalog) Report {
 			sources := catalog.DuplicateNames[name]
 			parts := make([]string, 0, len(sources))
 			for _, source := range sources {
-				parts = append(parts, fmt.Sprintf("%s (%s)", source.Path, source.Scope))
+				label := source.Scope
+				if strings.TrimSpace(source.Category) != "" {
+					label = source.Category
+				}
+				parts = append(parts, fmt.Sprintf("%s (%s)", source.Path, label))
 			}
 			report.Issues = append(report.Issues, Issue{
 				Level:   "error",

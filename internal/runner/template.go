@@ -37,13 +37,13 @@ func ResolveTemplate(value string, vars map[string]string) (string, error) {
 
 // ResolveSlice resolves templates in each slice item.
 func ResolveSlice(values []string, vars map[string]string) ([]string, error) {
-	resolved := make([]string, 0, len(values))
-	for _, value := range values {
+	resolved := make([]string, len(values))
+	for i, value := range values {
 		item, err := ResolveTemplate(value, vars)
 		if err != nil {
 			return nil, err
 		}
-		resolved = append(resolved, item)
+		resolved[i] = item
 	}
 	return resolved, nil
 }
