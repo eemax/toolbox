@@ -147,11 +147,18 @@ Available task scripts:
 
 ## Documentation Map
 
-- User workflows: [`docs/guides/USER_GUIDE.md`](docs/guides/USER_GUIDE.md)
+**For humans:**
+- User guide: [`docs/guides/USER_GUIDE.md`](docs/guides/USER_GUIDE.md)
+- Task manifest schema: [`docs/reference/MANIFEST_SCHEMA.md`](docs/reference/MANIFEST_SCHEMA.md)
+- Config schema + env vars: [`docs/reference/CONFIG_SCHEMA.md`](docs/reference/CONFIG_SCHEMA.md)
+- Exit codes + JSON output contract: [`docs/reference/EXIT_CODES.md`](docs/reference/EXIT_CODES.md)
+- Changelog: [`CHANGELOG.md`](CHANGELOG.md)
+
+**For agents:**
+- Agent entry point: [`AGENTS.md`](AGENTS.md)
 - Technical architecture: [`docs/architecture/TECHNICAL.md`](docs/architecture/TECHNICAL.md)
-- Agent decisions: [`docs/agents/DECISIONS.md`](docs/agents/DECISIONS.md)
-- Agent handover: [`docs/agents/AGENTS_HANDOVER.md`](docs/agents/AGENTS_HANDOVER.md)
-- Agent workflow standards: [`docs/agents/AGENTS_README.md`](docs/agents/AGENTS_README.md)
+- Architectural decisions: [`docs/agents/DECISIONS.md`](docs/agents/DECISIONS.md)
+- Current state + next areas: [`docs/agents/AGENTS_HANDOVER.md`](docs/agents/AGENTS_HANDOVER.md)
 
 ## Repository Layout
 
