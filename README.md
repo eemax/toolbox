@@ -145,31 +145,29 @@ Available task scripts:
 - `make bench-smoke`
 - `make test-watch`
 
-## Documentation Map
+## Documentation
 
-**For humans:**
-- User guide: [`docs/guides/USER_GUIDE.md`](docs/guides/USER_GUIDE.md)
-- Task manifest schema: [`docs/reference/MANIFEST_SCHEMA.md`](docs/reference/MANIFEST_SCHEMA.md)
-- Config schema + env vars: [`docs/reference/CONFIG_SCHEMA.md`](docs/reference/CONFIG_SCHEMA.md)
-- Exit codes + JSON output contract: [`docs/reference/EXIT_CODES.md`](docs/reference/EXIT_CODES.md)
-- Changelog: [`CHANGELOG.md`](CHANGELOG.md)
+**Using toolbox:**
+- [User guide](docs/user-guide.md)
+- [Task manifest schema](docs/reference/manifest.md)
+- [Config schema + env vars](docs/reference/config.md)
+- [Exit codes + JSON output contracts](docs/reference/contracts.md)
+- [Changelog](docs/changelog.md)
 
-**For agents:**
-- Agent entry point: [`AGENTS.md`](AGENTS.md)
-- Technical architecture: [`docs/architecture/TECHNICAL.md`](docs/architecture/TECHNICAL.md)
-- Architectural decisions: [`docs/agents/DECISIONS.md`](docs/agents/DECISIONS.md)
-- Current state + next areas: [`docs/agents/AGENTS_HANDOVER.md`](docs/agents/AGENTS_HANDOVER.md)
+**Contributing / agents:**
+- [AGENTS.md](AGENTS.md) — start here
+- [Architecture](docs/architecture.md)
+- [Decisions (ADRs)](docs/decisions.md)
+- [Handover + current state](docs/handover.md)
 
 ## Repository Layout
 
-```text
-cmd/toolbox/            # CLI entrypoint
-internal/               # application internals
-pkg/contract/           # stable output contract types
-tests/unit/             # sample unit test entry points
-tests/integration/      # sample integration test entry points
-tests/fixtures/         # fixture files used by tests
-testdata/               # golden and testscript assets
-examples/.toolbox/      # sample local config and task manifests
-docs/                   # user, architecture, and agent documentation
+```
+cmd/toolbox/      entrypoint
+internal/         CLI, config, manifest, runner, add, doctor, output
+pkg/contract/     stable JSON output types (RunEnvelope, DryRunEnvelope)
+testdata/         testscript fixtures, golden outputs
+tests/            unit + integration test entry points
+examples/         sample project config and task manifests
+docs/             architecture, decisions, handover, reference schemas
 ```
