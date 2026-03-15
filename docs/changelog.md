@@ -5,9 +5,8 @@
 ## unreleased
 
 - Schema-based manifest validation (v1.1)
-- Plugin discovery and delegation lifecycle (ADR-007 revisit)
+- Plugin discovery and delegation lifecycle
 - Expanded `doctor` remediation hints with `fix_hint` field
-- Windows compatibility for integration tests
 
 ---
 
