@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"sort"
@@ -349,7 +350,9 @@ func mapEnvKey(envKey string) (mappedEnvKey, bool) {
 		if !strings.Contains(normalized, "__") {
 			return mappedEnvKey{}, false
 		}
-		return mappedEnvKey{key: strings.ReplaceAll(normalized, "__", ".")}, true
+		mapped := strings.ReplaceAll(normalized, "__", ".")
+		slog.Debug("env override via fallback mapping", "env_key", envKey, "config_key", mapped)
+		return mappedEnvKey{key: mapped}, true
 	}
 }
 

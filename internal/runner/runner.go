@@ -14,6 +14,7 @@ import (
 
 	"toolbox/internal/config"
 	"toolbox/internal/manifest"
+	"toolbox/internal/shared"
 	"toolbox/pkg/contract"
 )
 
@@ -59,7 +60,7 @@ type Runner struct {
 // New returns a Runner configured with runtime config and environment.
 func New(cfg config.Config, rawCfg map[string]any, env map[string]string) *Runner {
 	if env == nil {
-		env = envToMap(os.Environ())
+		env = shared.EnvToMap(os.Environ())
 	}
 	if rawCfg == nil {
 		rawCfg = map[string]any{}
@@ -150,8 +151,8 @@ func (r *Runner) Execute(ctx context.Context, opts ExecuteOptions) (ExecuteResul
 	runCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	startedAt := r.now().UTC()
 	started := r.now()
+	startedAt := started.UTC()
 	cmd := exec.CommandContext(runCtx, commandPath, resolvedArgs...)
 	cmd.Dir = resolvedCWD
 	cmd.Env = mapToSortedEnv(mergeEnv(r.env, resolvedEnv))
@@ -461,14 +462,3 @@ func (b *cappedBuffer) Truncated() bool {
 	return b.truncated
 }
 
-func envToMap(entries []string) map[string]string {
-	result := make(map[string]string, len(entries))
-	for _, entry := range entries {
-		parts := strings.SplitN(entry, "=", 2)
-		if len(parts) != 2 {
-			continue
-		}
-		result[parts[0]] = parts[1]
-	}
-	return result
-}

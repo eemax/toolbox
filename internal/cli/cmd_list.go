@@ -2,6 +2,7 @@ package cli
 
 import (
 	"toolbox/internal/output"
+	"toolbox/internal/shared"
 
 	"github.com/spf13/cobra"
 )
@@ -20,7 +21,7 @@ func (a *App) newListCommand(global *globalFlags) *cobra.Command {
 				return &ExitError{Code: 1, Message: err.Error()}
 			}
 
-			tasks := sortedTasks(catalog.Tasks)
+			tasks := shared.SortedTasks(catalog.Tasks)
 			if global.JSON {
 				type listItem struct {
 					Name        string `json:"name"`

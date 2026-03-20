@@ -1,14 +1,14 @@
 package output
 
 import (
-	"errors"
+	"bytes"
 	"io"
 	"testing"
 
 	"toolbox/internal/config"
 )
 
-func TestConfigHumanReturnsWriteError(t *testing.T) {
+func TestConfigHumanDoesNotPanicOnWriteError(t *testing.T) {
 	t.Parallel()
 	loaded := config.LoadedConfig{
 		Config: config.Config{LogLevel: "info"},
@@ -17,12 +17,22 @@ func TestConfigHumanReturnsWriteError(t *testing.T) {
 		},
 	}
 
-	err := ConfigHuman(failingWriter{}, loaded)
-	if err == nil {
-		t.Fatalf("expected write error")
+	// ConfigHuman silently ignores write errors, consistent with other *Human functions.
+	ConfigHuman(failingWriter{}, loaded)
+}
+
+func TestConfigHumanWritesToBuffer(t *testing.T) {
+	t.Parallel()
+	loaded := config.LoadedConfig{
+		Config: config.Config{LogLevel: "info"},
+		Sources: config.Sources{
+			Precedence: []string{"flags", "defaults"},
+		},
 	}
-	if !errors.Is(err, io.ErrClosedPipe) {
-		t.Fatalf("expected io.ErrClosedPipe, got %v", err)
+	buf := &bytes.Buffer{}
+	ConfigHuman(buf, loaded)
+	if buf.Len() == 0 {
+		t.Fatal("expected non-empty output")
 	}
 }
 

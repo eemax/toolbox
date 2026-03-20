@@ -152,13 +152,10 @@ Available task scripts:
 - [Task manifest schema](docs/reference/manifest.md)
 - [Config schema + env vars](docs/reference/config.md)
 - [Exit codes + JSON output contracts](docs/reference/contracts.md)
-- [Changelog](docs/changelog.md)
-
 **Contributing / agents:**
 - [AGENTS.md](AGENTS.md) — start here
 - [Architecture](docs/architecture.md)
-- [Decisions (ADRs)](docs/decisions.md)
-- [Handover + current state](docs/handover.md)
+- [Status (decisions, changelog, handover)](docs/status.md)
 
 ## Repository Layout
 

@@ -18,11 +18,10 @@ Every command supports `--json`. The output contract is stable and versioned in 
 |---|---|---|
 | 1 | `AGENTS.md` | This file — orientation, invariants, workflow |
 | 2 | `docs/architecture.md` | How the system works end-to-end |
-| 3 | `docs/decisions.md` | Why things are the way they are (ADR-001 → ADR-012) |
-| 4 | `docs/handover.md` | Current state, known gaps, next priority areas |
-| 5 | `docs/reference/manifest.md` | Full task YAML schema |
-| 6 | `docs/reference/config.md` | Full config schema + all env var overrides |
-| 7 | `docs/reference/contracts.md` | Exit codes + all JSON output shapes |
+| 3 | `docs/status.md` | Decisions (ADR-001 → ADR-012), changelog, current state, next priorities |
+| 4 | `docs/reference/manifest.md` | Full task YAML schema |
+| 5 | `docs/reference/config.md` | Full config schema + all env var overrides |
+| 6 | `docs/reference/contracts.md` | Exit codes + all JSON output shapes |
 
 Only read `README.md` if you need the human-facing perspective. It is not required for agent work.
 
@@ -88,9 +87,7 @@ examples/
 
 docs/
   architecture.md             system design, data flow, subsystem reference
-  decisions.md                ADR-001 through ADR-012
-  handover.md                 current state + next priority areas
-  changelog.md                version history
+  status.md                   decisions, changelog, current state, next priorities
   user-guide.md               end-user usage (not required for agent work)
   reference/
     manifest.md               task YAML schema — all fields, types, template vars
@@ -131,7 +128,7 @@ These are load-bearing constraints. Violating them breaks machine consumers or c
 | New task source directory | `internal/config/task_sources.go` first, then adapt consumers |
 | New diagnostic check | `internal/doctor/doctor.go` |
 | New output contract field | `pkg/contract/envelope.go` + document in `docs/reference/contracts.md` |
-| New ADR | `docs/decisions.md` — add before implementing |
+| New ADR | `docs/status.md` — add before implementing |
 
 ---
 
@@ -143,7 +140,7 @@ These are load-bearing constraints. Violating them breaks machine consumers or c
 4. **Test.** `make test` — must exit 0. Use `make test-unit` or `make test-integration` for targeted runs.
 5. **Quality.** `make quality` — vet + coverage floor checks.
 6. **Update tests.** Every behavior change needs test coverage.
-7. **Update docs.** Any behavior change updates the relevant `docs/` file + `docs/handover.md`.
+7. **Update docs.** Any behavior change updates the relevant `docs/` file + `docs/status.md`.
 8. **Commit.** Clear message. Include `Generated with [Continue](https://continue.dev)` in the body.
 
 ---
@@ -154,7 +151,7 @@ These are load-bearing constraints. Violating them breaks machine consumers or c
 - `make test` exits 0 (includes race detector via `go test -race ./...` in CI)
 - `go vet ./...` — no new warnings
 - `make quality` — coverage floors pass
-- Docs updated: relevant `docs/` file + `docs/handover.md` + this file if architecture changed
+- Docs updated: relevant `docs/` file + `docs/status.md` + this file if architecture changed
 - No breaking changes to `pkg/contract` field names
 - Checkpoint commit created
 
@@ -166,4 +163,4 @@ These are load-bearing constraints. Violating them breaks machine consumers or c
 - Do not commit `bin/`, `vendor/`, or any generated build artifacts.
 - All pre-execution failures must be machine-readable in envelope `stderr`.
 - Prefer deterministic behavior over implicit rules — make precedence and ordering explicit.
-- When adding a non-trivial design decision, write the ADR in `docs/decisions.md` first.
+- When adding a non-trivial design decision, write the ADR in `docs/status.md` first.

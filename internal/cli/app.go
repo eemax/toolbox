@@ -7,6 +7,8 @@ import (
 	"log/slog"
 	"os"
 	"strings"
+
+	"toolbox/internal/shared"
 )
 
 // ExitError allows commands to control process exit codes.
@@ -40,7 +42,7 @@ func New(version string, stdout, stderr io.Writer, env map[string]string) *App {
 		stderr = os.Stderr
 	}
 	if env == nil {
-		env = envToMap(os.Environ())
+		env = shared.EnvToMap(os.Environ())
 	}
 	app := &App{version: version, stdout: stdout, stderr: stderr, env: env}
 	app.configureLogger("info")

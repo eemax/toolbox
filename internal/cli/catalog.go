@@ -15,8 +15,7 @@ import (
 	"toolbox/internal/manifest"
 )
 
-func (a *App) loadConfigAndCatalog(ctx context.Context, cmd *cobra.Command, global *globalFlags) (config.LoadedConfig, manifest.Catalog, error) {
-	_ = ctx
+func (a *App) loadConfigOnly(cmd *cobra.Command, global *globalFlags) (config.LoadedConfig, error) {
 	levelForResolution := global.LogLevel
 	if strings.TrimSpace(levelForResolution) == "" {
 		levelForResolution = "info"
@@ -28,7 +27,7 @@ func (a *App) loadConfigAndCatalog(ctx context.Context, cmd *cobra.Command, glob
 
 	cwd, err := os.Getwd()
 	if err != nil {
-		return config.LoadedConfig{}, manifest.Catalog{}, &ExitError{Code: 1, Message: fmt.Sprintf("resolve cwd: %v", err)}
+		return config.LoadedConfig{}, &ExitError{Code: 1, Message: fmt.Sprintf("resolve cwd: %v", err)}
 	}
 	home := a.env["HOME"]
 	flagOverrides := map[string]any{}
@@ -47,7 +46,7 @@ func (a *App) loadConfigAndCatalog(ctx context.Context, cmd *cobra.Command, glob
 		HomeDir:       home,
 	})
 	if err != nil {
-		return config.LoadedConfig{}, manifest.Catalog{}, &ExitError{Code: 1, Message: err.Error()}
+		return config.LoadedConfig{}, &ExitError{Code: 1, Message: err.Error()}
 	}
 
 	level := loaded.Config.LogLevel
@@ -58,6 +57,21 @@ func (a *App) loadConfigAndCatalog(ctx context.Context, cmd *cobra.Command, glob
 		level = "debug"
 	}
 	a.configureLogger(level)
+	return loaded, nil
+}
+
+func (a *App) loadConfigAndCatalog(ctx context.Context, cmd *cobra.Command, global *globalFlags) (config.LoadedConfig, manifest.Catalog, error) {
+	_ = ctx
+	loaded, err := a.loadConfigOnly(cmd, global)
+	if err != nil {
+		return config.LoadedConfig{}, manifest.Catalog{}, err
+	}
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		return config.LoadedConfig{}, manifest.Catalog{}, &ExitError{Code: 1, Message: fmt.Sprintf("resolve cwd: %v", err)}
+	}
+	home := a.env["HOME"]
 
 	taskSources := config.CatalogTaskSources(cwd, home)
 	catalog := manifest.Load(manifest.LoadOptions{Sources: toManifestSources(taskSources)})
@@ -78,19 +92,6 @@ func (a *App) loadConfigAndCatalog(ctx context.Context, cmd *cobra.Command, glob
 		)
 	}
 	return loaded, catalog, nil
-}
-
-func sortedTasks(tasks map[string]manifest.Task) []manifest.Task {
-	names := make([]string, 0, len(tasks))
-	for name := range tasks {
-		names = append(names, name)
-	}
-	sort.Strings(names)
-	result := make([]manifest.Task, 0, len(names))
-	for _, name := range names {
-		result = append(result, tasks[name])
-	}
-	return result
 }
 
 func (a *App) completeTaskNames(cmd *cobra.Command, global *globalFlags, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -129,18 +130,6 @@ func parseTimeout(value string) (time.Duration, error) {
 		return 0, errors.New("--timeout must be greater than zero")
 	}
 	return duration, nil
-}
-
-func envToMap(entries []string) map[string]string {
-	result := make(map[string]string, len(entries))
-	for _, entry := range entries {
-		parts := strings.SplitN(entry, "=", 2)
-		if len(parts) != 2 {
-			continue
-		}
-		result[parts[0]] = parts[1]
-	}
-	return result
 }
 
 func toManifestSources(sources []config.TaskCatalogSource) []manifest.SourceDir {

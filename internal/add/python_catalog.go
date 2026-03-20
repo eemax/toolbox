@@ -7,6 +7,7 @@ import (
 
 	"toolbox/internal/config"
 	"toolbox/internal/manifest"
+	"toolbox/internal/shared"
 )
 
 func (a pythonAdder) checkTaskNameConflicts(cfg resolvedPythonConfig) error {
@@ -14,14 +15,7 @@ func (a pythonAdder) checkTaskNameConflicts(cfg resolvedPythonConfig) error {
 	catalog := a.loadCatalog(manifest.LoadOptions{Sources: toManifestSources(sources)})
 
 	if sources, ok := catalog.DuplicateNames[cfg.Name]; ok && len(sources) > 0 {
-		parts := make([]string, 0, len(sources))
-		for _, source := range sources {
-			label := source.Scope
-			if strings.TrimSpace(source.Category) != "" {
-				label = source.Category
-			}
-			parts = append(parts, fmt.Sprintf("%s (%s)", source.Path, label))
-		}
+		parts := shared.FormatDuplicateSources(sources)
 		return fmt.Errorf("task name %q already exists in multiple manifests: %s", cfg.Name, strings.Join(parts, ", "))
 	}
 

@@ -8,6 +8,14 @@ import (
 
 	"toolbox/internal/config"
 	"toolbox/internal/manifest"
+	"toolbox/internal/shared"
+)
+
+// Issue level constants.
+const (
+	LevelError   = "error"
+	LevelWarning = "warning"
+	LevelInfo    = "info"
 )
 
 // Issue is a doctor finding.
@@ -26,7 +34,7 @@ type Report struct {
 // HasErrors returns true when report contains one or more error-level issues.
 func (r Report) HasErrors() bool {
 	for _, issue := range r.Issues {
-		if strings.EqualFold(issue.Level, "error") {
+		if strings.EqualFold(issue.Level, LevelError) {
 			return true
 		}
 	}
@@ -38,7 +46,7 @@ func Run(cfg config.LoadedConfig, catalog manifest.Catalog) Report {
 	report := Report{Issues: []Issue{}}
 	if cfg.Sources.UserConfig == "" && cfg.Sources.ProjectConfig == "" && cfg.Sources.ExplicitConfig == "" {
 		report.Issues = append(report.Issues, Issue{
-			Level:   "warning",
+			Level:   LevelWarning,
 			Check:   "config",
 			Message: "no user/project config file found",
 			Hint:    "Create .toolbox/config.yaml or ~/.config/toolbox/config.yaml to customize defaults.",
@@ -47,7 +55,7 @@ func Run(cfg config.LoadedConfig, catalog manifest.Catalog) Report {
 
 	for _, err := range catalog.Errors {
 		report.Issues = append(report.Issues, Issue{
-			Level:   "error",
+			Level:   LevelError,
 			Check:   "manifest",
 			Message: err.Error(),
 			Hint:    "Fix YAML parsing/validation errors and run `toolbox doctor` again.",
@@ -62,16 +70,9 @@ func Run(cfg config.LoadedConfig, catalog manifest.Catalog) Report {
 		sort.Strings(duplicateNames)
 		for _, name := range duplicateNames {
 			sources := catalog.DuplicateNames[name]
-			parts := make([]string, 0, len(sources))
-			for _, source := range sources {
-				label := source.Scope
-				if strings.TrimSpace(source.Category) != "" {
-					label = source.Category
-				}
-				parts = append(parts, fmt.Sprintf("%s (%s)", source.Path, label))
-			}
+			parts := shared.FormatDuplicateSources(sources)
 			report.Issues = append(report.Issues, Issue{
-				Level:   "error",
+				Level:   LevelError,
 				Check:   "duplicate_task",
 				Message: fmt.Sprintf("task %q is defined more than once: %s", name, strings.Join(parts, ", ")),
 				Hint:    "Rename or remove one definition; duplicates are not allowed in v1.",
@@ -79,10 +80,10 @@ func Run(cfg config.LoadedConfig, catalog manifest.Catalog) Report {
 		}
 	}
 
-	for _, task := range sortedTasks(catalog.Tasks) {
+	for _, task := range shared.SortedTasks(catalog.Tasks) {
 		if _, err := exec.LookPath(task.Command); err != nil {
 			report.Issues = append(report.Issues, Issue{
-				Level:   "error",
+				Level:   LevelError,
 				Check:   "runtime",
 				Message: fmt.Sprintf("task %q command %q not found in PATH", task.Name, task.Command),
 				Hint:    fmt.Sprintf("Install %q or update PATH.", task.Command),
@@ -94,7 +95,7 @@ func Run(cfg config.LoadedConfig, catalog manifest.Catalog) Report {
 			}
 			if _, err := exec.LookPath(dependency); err != nil {
 				report.Issues = append(report.Issues, Issue{
-					Level:   "error",
+					Level:   LevelError,
 					Check:   "runtime",
 					Message: fmt.Sprintf("task %q missing required binary %q", task.Name, dependency),
 					Hint:    fmt.Sprintf("Install %q and rerun doctor.", dependency),
@@ -116,15 +117,3 @@ func Run(cfg config.LoadedConfig, catalog manifest.Catalog) Report {
 	return report
 }
 
-func sortedTasks(tasks map[string]manifest.Task) []manifest.Task {
-	names := make([]string, 0, len(tasks))
-	for name := range tasks {
-		names = append(names, name)
-	}
-	sort.Strings(names)
-	result := make([]manifest.Task, 0, len(names))
-	for _, name := range names {
-		result = append(result, tasks[name])
-	}
-	return result
-}

@@ -12,8 +12,7 @@ func (a *App) newConfigCommand(global *globalFlags) *cobra.Command {
 		Use:   "show",
 		Short: "Show resolved config and precedence",
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			ctx := cmd.Context()
-			loaded, _, err := a.loadConfigAndCatalog(ctx, cmd, global)
+			loaded, err := a.loadConfigOnly(cmd, global)
 			if err != nil {
 				return err
 			}
@@ -24,7 +23,8 @@ func (a *App) newConfigCommand(global *globalFlags) *cobra.Command {
 				}
 				return output.JSON(a.stdout, payload)
 			}
-			return output.ConfigHuman(a.stdout, loaded)
+			output.ConfigHuman(a.stdout, loaded)
+			return nil
 		},
 	})
 	return configCmd

@@ -132,9 +132,7 @@ func TestConfigHumanFormatsSourcesAndResolvedConfig(t *testing.T) {
 		},
 	}
 	buf := &bytes.Buffer{}
-	if err := ConfigHuman(buf, loaded); err != nil {
-		t.Fatalf("ConfigHuman: %v", err)
-	}
+	ConfigHuman(buf, loaded)
 	out := buf.String()
 	for _, expected := range []string{
 		"Config precedence (highest to lowest):",

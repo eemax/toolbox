@@ -91,37 +91,19 @@ func DoctorHuman(w io.Writer, report doctor.Report) {
 }
 
 // ConfigHuman prints resolved config plus source info.
-func ConfigHuman(w io.Writer, loaded config.LoadedConfig) error {
-	if _, err := fmt.Fprintln(w, "Config precedence (highest to lowest):"); err != nil {
-		return err
-	}
+func ConfigHuman(w io.Writer, loaded config.LoadedConfig) {
+	_, _ = fmt.Fprintln(w, "Config precedence (highest to lowest):")
 	for _, item := range loaded.Sources.Precedence {
-		if _, err := fmt.Fprintf(w, "- %s\n", item); err != nil {
-			return err
-		}
+		_, _ = fmt.Fprintf(w, "- %s\n", item)
 	}
-	if _, err := fmt.Fprintln(w, "\nSources:"); err != nil {
-		return err
-	}
-	if _, err := fmt.Fprintf(w, "- user: %s\n", fallback(loaded.Sources.UserConfig, "(not found)")); err != nil {
-		return err
-	}
-	if _, err := fmt.Fprintf(w, "- project: %s\n", fallback(loaded.Sources.ProjectConfig, "(not found)")); err != nil {
-		return err
-	}
-	if _, err := fmt.Fprintf(w, "- explicit: %s\n", fallback(loaded.Sources.ExplicitConfig, "(not set)")); err != nil {
-		return err
-	}
-	if _, err := fmt.Fprintf(w, "- env overrides: %s\n", fallback(strings.Join(loaded.Sources.EnvOverrides, ", "), "(none)")); err != nil {
-		return err
-	}
-	if _, err := fmt.Fprintf(w, "- flag overrides: %s\n", fallback(strings.Join(loaded.Sources.FlagOverrides, ", "), "(none)")); err != nil {
-		return err
-	}
-	if _, err := fmt.Fprintln(w, "\nResolved:"); err != nil {
-		return err
-	}
-	return JSON(w, loaded.Config)
+	_, _ = fmt.Fprintln(w, "\nSources:")
+	_, _ = fmt.Fprintf(w, "- user: %s\n", fallback(loaded.Sources.UserConfig, "(not found)"))
+	_, _ = fmt.Fprintf(w, "- project: %s\n", fallback(loaded.Sources.ProjectConfig, "(not found)"))
+	_, _ = fmt.Fprintf(w, "- explicit: %s\n", fallback(loaded.Sources.ExplicitConfig, "(not set)"))
+	_, _ = fmt.Fprintf(w, "- env overrides: %s\n", fallback(strings.Join(loaded.Sources.EnvOverrides, ", "), "(none)"))
+	_, _ = fmt.Fprintf(w, "- flag overrides: %s\n", fallback(strings.Join(loaded.Sources.FlagOverrides, ", "), "(none)"))
+	_, _ = fmt.Fprintln(w, "\nResolved:")
+	_ = JSON(w, loaded.Config)
 }
 
 func fallback(value, defaultValue string) string {
